@@ -72,9 +72,7 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/t
 Rodando o Projeto
 
 Rodar o backend
-cd backend
 node index.js
 
 Rodar o frontend
-cd frontend
 npm start
