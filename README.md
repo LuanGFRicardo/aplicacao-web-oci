@@ -21,13 +21,15 @@ Este projeto é uma aplicação de portal de cadastro com autenticação e contr
    ```
 
 2. **Configure as variáveis de ambiente**  
-   Crie um arquivo `.env` na raiz do projeto e defina as variáveis conforme necessário:
+   Crie um arquivo `.env` na raiz do projeto e defina as variáveis conforme necessário, abaixo está configurado para o container Docker:
 
    ```env
-   DB_HOST=db
    DB_USER=test
    DB_PASSWORD=test
+   DB_HOST=localhost
+   DB_PORT=3306
    DB_NAME=test
+
    JWT_SECRET=test
    PORT=3001
    ```
@@ -56,6 +58,7 @@ Este projeto é uma aplicação de portal de cadastro com autenticação e contr
    ```bash
    docker-compose up -d
    ```
+   - Utilize os comandos de aplicacao-web-oci/script.db em sua MySQL local ou após gerar o container.
 
 3. **Rodar o Backend:**
 
