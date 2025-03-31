@@ -1,18 +1,21 @@
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Login from "./pages/Login";
-import Cadastro from "./pages/Cadastro";
-import Dashboard from "./pages/Dashboard";
+import AdminDashboard from "./pages/AdminDashboard";
+import GerenteDashboard from "./pages/GerenteDashboard";
+import OperadorDashboard from "./pages/OperadorDashboard";
 
 function App() {
-    return (
-        <Router>
-            <Routes>
-                <Route path="/" element={<Login />} />
-                <Route path="/cadastro" element={<Cadastro />} />
-                <Route path="/dashboard" element={<Dashboard />} />
-            </Routes>
-        </Router>
-    );
+  return (
+    <Router>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/admin/dashboard" element={<AdminDashboard />} />
+        <Route path="/gerente/dashboard" element={<GerenteDashboard />} />
+        <Route path="/operador/dashboard" element={<OperadorDashboard />} />
+        <Route path="*" element={<Login />} /> {/* Rota para casos não encontrados */}
+      </Routes>
+    </Router>
+  );
 }
 
 export default App;

@@ -32,7 +32,7 @@ db.connect((err) => {
     }
 });
 
-// 🔹 Middleware de autenticação
+// 🔹 Middleware de autenticação e controle de acesso baseado em função (RBAC)
 function authMiddleware(roles = []) {
     return (req, res, next) => {
         const token = req.headers.authorization?.split(" ")[1];
@@ -42,6 +42,7 @@ function authMiddleware(roles = []) {
             const decoded = jwt.verify(token, process.env.JWT_SECRET);
             req.user = decoded;
 
+            // Verifica se o usuário tem a role adequada para acessar
             if (roles.length && !roles.includes(decoded.role)) {
                 return res.status(403).json({ error: "Permissão insuficiente" });
             }
@@ -58,35 +59,52 @@ async function hashSenhaAdmin() {
     return await bcrypt.hash("admin", 10);
 }
 
-// 🔹 Criar o usuário admin se não existir
-async function criarAdmin() {
-    const senhaHash = await hashSenhaAdmin();
+// 🔹 Hash da senha inicial padrão
+async function hashSenhaPadrao() {
+    return await bcrypt.hash("123456", 10);
+}
 
-    const query = "SELECT COUNT(*) AS total FROM usuarios WHERE role = 'admin'";
+// 🔹 Criar usuários iniciais (Admin, Gerente e Operador) se não existirem
+async function criarUsuariosIniciais() {
+    const senhaHash = await hashSenhaPadrao();
 
-    db.query(query, (err, result) => {
+    // Verificar se já existem usuários admin, gerente e operador
+    const query = `
+        SELECT role FROM usuarios WHERE role IN ('admin', 'gerente', 'operador')
+    `;
+
+    db.query(query, async (err, result) => {
         if (err) {
-            console.error("Erro ao verificar admin:", err);
+            console.error("Erro ao verificar usuários iniciais:", err);
             return;
         }
 
-        if (result[0].total === 0) {
-            // Criar usuário admin se não existir
-            const insertQuery = `
-            INSERT INTO usuarios (id, nome, email, senha, role, empresa_id, aprovado) 
-            VALUES (UUID(), 'Admin', 'admin@gmail.com', ?, 'admin', ?, 1)
-            `;
+        const rolesExistentes = result.map(user => user.role);
         
-            db.query(insertQuery, [senhaHash, 'id_da_empresa'], (err, result) => {
-                if (err) {
-                    console.error("Erro ao criar admin:", err);
-                } else {
-                    console.log("✅ Usuário admin criado.");
-                }
-            });        
-        } else {
-            console.log("🔹 Usuário admin já existe.");
-        }
+        const usuariosParaCriar = [
+            { nome: "Admin", email: "admin@gmail.com", role: "admin", empresa_id: "id_da_empresa" },
+            { nome: "Gerente", email: "gerente@gmail.com", role: "gerente", empresa_id: "id_da_empresa" },
+            { nome: "Operador", email: "operador@gmail.com", role: "operador", empresa_id: "id_da_empresa" }
+        ];
+
+        usuariosParaCriar.forEach(usuario => {
+            if (!rolesExistentes.includes(usuario.role)) {
+                const insertQuery = `
+                    INSERT INTO usuarios (id, nome, email, senha, role, empresa_id, aprovado) 
+                    VALUES (UUID(), ?, ?, ?, ?, ?, 1)
+                `;
+
+                db.query(insertQuery, [usuario.nome, usuario.email, senhaHash, usuario.role, usuario.empresa_id], (err) => {
+                    if (err) {
+                        console.error(`Erro ao criar usuário ${usuario.role}:`, err);
+                    } else {
+                        console.log(`✅ Usuário ${usuario.role} criado.`);
+                    }
+                });
+            } else {
+                console.log(`🔹 Usuário ${usuario.role} já existe.`);
+            }
+        });
     });
 }
 
@@ -145,7 +163,7 @@ app.post("/login", async (req, res) => {
     });
 });
 
-// 🔹 Rota protegida: apenas administradores podem ver todos os usuários
+// 🔹 Endpoint: Lista de Usuários (admin)
 app.get("/usuarios", authMiddleware(["admin"]), (req, res) => {
     const query = "SELECT id, nome, email, role, aprovado FROM usuarios";
 
@@ -158,7 +176,8 @@ app.get("/usuarios", authMiddleware(["admin"]), (req, res) => {
     });
 });
 
+// 🔹 Inicia o servidor e cria os usuários iniciais
 app.listen(process.env.PORT, async () => {
     console.log(`✅ Servidor rodando na porta ${process.env.PORT}`);
-    await criarAdmin();
+    await criarUsuariosIniciais();
 });
