@@ -281,19 +281,7 @@ app.post("/register", async (req, res) => {
     });
 });
 
-// Aprovar usuário (requer permissão admin)
-app.post("/aprovar/:id", authMiddleware(["admin"]), (req, res) => {
-    const id = req.params.id;
-    const query = "UPDATE usuarios SET aprovado = 1 WHERE id = ?";
 
-    db.query(query, [id], (err, result) => {
-        if (err) {
-            res.status(500).json({ error: "Erro ao aprovar usuário" });
-        } else {
-            res.json({ message: "Usuário aprovado!" });
-        }
-    });
-});
 
 // Login de usuário
 app.post("/login", async (req, res) => {
@@ -341,6 +329,51 @@ app.get("/usuarios", authMiddleware(["admin", "gerente"]), (req, res) => {
     });
 });
 
+// Listar usuário pendentes
+app.get("/pendentes", authMiddleware(["admin"]), (req, res) => {
+    const query = "SELECT * FROM usuarios WHERE aprovado = 0";
+
+    db.query(query, (err, result) => {
+        if (err) {
+            res.status(500).json({ error: "Erro ao buscar usuários pendentes." });
+        } else {
+            res.json({
+                status: "success",
+                message: "Usuários pendentes listados com sucesso",
+                data: result,
+            });
+        }
+    });
+});
+
+// Rejeitar usuário pendente
+app.delete("/remover/:id", authMiddleware(["admin"]), (req, res) => {
+    const { id } = req.params;
+
+    db.query("DELETE FROM usuarios WHERE id = ?", [id], (err) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).json({ erro: "Erro ao remover usuário." });
+        }
+
+        res.json({ mensagem: "Usuário removido com sucesso." });
+    });
+});
+
+// Aprovar usuário (requer permissão admin)
+app.post("/aprovar/:id", authMiddleware(["admin"]), (req, res) => {
+    const id = req.params.id;
+    const query = "UPDATE usuarios SET aprovado = 1 WHERE id = ?";
+
+    db.query(query, [id], (err, result) => {
+        if (err) {
+            res.status(500).json({ error: "Erro ao aprovar usuário" });
+        } else {
+            res.json({ message: "Usuário aprovado!" });
+        }
+    });
+});
+
 // Atualização de dados do usuário (por gerente)
 app.post("/usuarios/:id", authMiddleware(["gerente"]), (req, res) => {
     const { id } = req.params;
@@ -362,6 +395,23 @@ app.post("/usuarios/:id", authMiddleware(["gerente"]), (req, res) => {
     });
 });
 
+// Listar roles/funções
+app.get("/buscar-roles", authMiddleware(["operador"]), (req, res) => {
+    const query = "SELECT * FROM role";
+
+    db.query(query, (err, result) => {
+        if (err) {
+            res.status(500).json({ error: "Erro ao buscar roles." });
+        } else {
+            res.json({
+                status: "success",
+                message: "Roles listadas com sucesso",
+                data: result,
+            });
+        }
+    });
+});
+
 // Listagem de empresas
 app.get("/empresas", (req, res) => {
     const query = "SELECT id, nome FROM empresa";
@@ -378,6 +428,63 @@ app.get("/empresas", (req, res) => {
             data: results
         });
     });
+});
+
+// Criar empresas
+app.post("/empresas", authMiddleware(["admin"]), async (req, res) => {
+    console.log('Requisição recebida para criação de empresa');
+    console.log('Dados recebidos:', req.body);
+
+    const { nome, cnpj, endereco, telefone, email } = req.body;
+
+    if (!nome || !cnpj) {
+        console.log('Nome ou CNPJ ausentes');
+        return res.status(400).json({ erro: "Nome e CNPJ são obrigatórios." });
+    }
+
+    const query = `
+        INSERT INTO empresa (id, nome, cnpj, endereco, telefone, email)
+        VALUES (UUID(), ?, ?, ?, ?, ?)
+    `;
+
+    db.query(query, [nome, cnpj, endereco, telefone, email], (err, results) => {
+        if (err) {
+          console.error("Erro ao criar empresa:", err);
+          return res.status(500).json({ erro: "Erro ao criar empresa no banco de dados." });
+        }
+        console.log("Empresa criada com sucesso.");
+        return res.status(201).json({ mensagem: "Empresa criada com sucesso." });
+      });      
+});
+
+// Enviar json OCI
+app.post("/enviar-oci", authMiddleware(["operador"]), async (req, res) => {
+    const { tipo, formato } = req.body;
+
+    console.log("Tipo:", tipo);
+    console.log("Formato recebido:", JSON.stringify(formato, null, 2));
+
+    const nome = formato.name;
+    const descricao = formato.description || null;
+
+    try {
+        const query = `
+            INSERT INTO json_format (id, nome, descricao, formato) 
+            VALUES (UUID(), ?, ?, ?)
+        `;
+        db.query(query, [nome, descricao, JSON.stringify(formato)]);  // Inserindo os dados na tabela
+
+        return res.status(200).json({
+            status: "success",
+            message: `Requisição do tipo '${tipo}' enviada para a OCI (mock) e salva no banco.`,
+        });
+    } catch (error) {
+        console.error("Erro ao salvar JSON no banco:", error);
+        return res.status(500).json({
+            status: "error",
+            message: "Erro ao salvar JSON no banco de dados.",
+        });
+    }
 });
 
 // 🔹 Inicia o servidor e cria os usuários iniciais

@@ -35,13 +35,13 @@ export const createEmpresa = (data) => API.post("/empresas", data);
 
 // ADMIN
 // Retorna usuários pendentes de aprovação no admin
-export const getUsuariosPendentes = () => API.get("/admin/usuarios/pendentes");
+export const getUsuariosPendentes = () => API.get("/pendentes");
 
 // Aprova um usuário específico
-export const aprovarUsuario = (id, empresaId) => API.post(`/admin/usuarios/aprovar/${id}`, { empresaId });
+export const aprovarUsuario = (id, empresaId) => API.post(`/aprovar/${id}`, { empresaId });
 
 // Rejeita e remove um usuário
-export const rejeitarUsuario = (id) => API.delete(`/admin/usuarios/remover/${id}`);
+export const rejeitarUsuario = (id) => API.delete(`/remover/${id}`);
 
 // Busca as roles disponíveis
 export const buscarRoles = () => API.get('/buscar-roles');
