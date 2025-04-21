@@ -16,12 +16,11 @@ Este projeto é uma aplicação de portal de cadastro com autenticação e contr
 1. **Clone o repositório:**
 
    ```bash
-   git clone https://github.com/usuário/repositório.git
-   cd repositório
+   git clone https://github.com/LuanGFRicardo/aplicacao-web-oci
    ```
 
 2. **Configure as variáveis de ambiente**  
-   Crie um arquivo `.env` na raiz do projeto e defina as variáveis conforme necessário, abaixo está configurado para o container Docker:
+   Crie um arquivo `.env` na raiz do projeto no diretório portal-cadastro/backend e defina as variáveis conforme necessário, abaixo está configurado para o container Docker:
 
    ```env
    DB_USER=test
@@ -45,7 +44,7 @@ Este projeto é uma aplicação de portal de cadastro com autenticação e contr
 1. **Instale as dependências do backend:**
 
    ```bash
-   cd backend
+   cd portal-cadastro/backend
    npm install
    ```
 
@@ -53,18 +52,18 @@ Este projeto é uma aplicação de portal de cadastro com autenticação e contr
 
    **Banco de dados MySQL:**
    - Certifique-se de que o MySQL está rodando e o banco de dados está configurado corretamente.
-   - Caso use o Docker, você pode rodar o comando abaixo para levantar o container:
+   - Caso use o Docker, você pode rodar o comando abaixo dentro do diretório aplicacao-web-oci para levantar o container:
 
    ```bash
    docker-compose up -d
    ```
-   - Utilize os comandos de aplicacao-web-oci/script.db em sua MySQL local ou após gerar o container.
 
 3. **Rodar o Backend:**
 
    Dentro da pasta do backend, execute:
 
    ```bash
+   cd portal-cadastro/backend
    node index.js
    ```
 
@@ -79,7 +78,7 @@ Este projeto é uma aplicação de portal de cadastro com autenticação e contr
    No diretório do frontend, execute:
 
    ```bash
-   cd frontend
+   cd portal-cadastro/frontend
    npm install
    ```
 
@@ -88,7 +87,7 @@ Este projeto é uma aplicação de portal de cadastro com autenticação e contr
    Após instalar as dependências, execute o comando abaixo para iniciar o servidor de desenvolvimento:
 
    ```bash
-   npm start
+   npm run start
    ```
 
    O frontend será acessível em: `http://localhost:3000`.
@@ -105,7 +104,7 @@ Após rodar o backend, você pode testar as rotas de login, registro, e outras d
    ```json
    {
      "email": "admin@gmail.com",
-     "senha": "senha_do_admin"
+     "senha": "admin"
    }
    ```
 

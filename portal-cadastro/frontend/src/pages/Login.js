@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { loginUser } from "../api";
 import { useNavigate } from "react-router-dom";
-import { jwtDecode } from "jwt-decode"; // Mudança para named import
+import { jwtDecode } from "jwt-decode";
+import "../index.css";
 
 const Login = () => {
     const [email, setEmail] = useState("");
@@ -12,28 +13,25 @@ const Login = () => {
         e.preventDefault();
         try {
             const response = await loginUser({ email, senha });
-            console.log("Resposta da API:", response.data); // Verificar a resposta da API
 
+            // Verifica se o token foi retornado pela API
             if (response.data && response.data.token) {
                 localStorage.setItem("token", response.data.token);
-                console.log("Token armazenado no localStorage:", localStorage.getItem("token"));
-
                 const decodedToken = jwtDecode(response.data.token);
-                console.log("Role do usuário:", decodedToken.role);
 
-                // Aguarde um pequeno tempo antes de redirecionar para garantir que o token foi salvo
+                // Redireciona de acordo com o papel (role) do usuário
                 setTimeout(() => {
-                    if (decodedToken.role === "admin") {
-                        console.log("Redirecionando para /admin/dashboard");
-                        navigate("/admin/dashboard");
-                    } else if (decodedToken.role === "gerente") {
-                        console.log("Redirecionando para /gerente/dashboard");
-                        navigate("/gerente/dashboard");
-                    } else {
-                        console.log("Redirecionando para /operador/dashboard");
-                        navigate("/operador/dashboard");
+                    switch (decodedToken.role) {
+                        case "admin":
+                            navigate("/admin/dashboard");
+                            break;
+                        case "gerente":
+                            navigate("/gerente/dashboard");
+                            break;
+                        default:
+                            navigate("/operador/dashboard");
                     }
-                }, 100); // Pequeno delay para evitar problemas de sincronização
+                }, 100);
             } else {
                 console.error("Token não retornado pela API");
             }
@@ -42,24 +40,34 @@ const Login = () => {
         }
     };
 
+    const redirecionarParaCadastro = () => {
+        navigate("/cadastro");
+    };
+
     return (
-        <form onSubmit={handleSubmit}>
-            <input 
-                type="email" 
-                placeholder="Email" 
-                value={email} 
-                onChange={(e) => setEmail(e.target.value)} 
-                required 
-            />
-            <input 
-                type="password" 
-                placeholder="Senha" 
-                value={senha} 
-                onChange={(e) => setSenha(e.target.value)} 
-                required 
-            />
-            <button type="submit">Entrar</button>
-        </form>
+        <div className="login-container">
+            <form className="login-form" onSubmit={handleSubmit}>
+                <h1>Login</h1>
+                <input 
+                    type="email" 
+                    placeholder="Email" 
+                    value={email} 
+                    onChange={(e) => setEmail(e.target.value)} 
+                    required 
+                />
+                <input 
+                    type="password" 
+                    placeholder="Senha" 
+                    value={senha} 
+                    onChange={(e) => setSenha(e.target.value)} 
+                    required 
+                />
+                <button type="submit">Entrar</button>
+                <button type="button" onClick={redirecionarParaCadastro}>
+                    Cadastre-se aqui!
+                </button>
+            </form>
+        </div>
     );
 };
 

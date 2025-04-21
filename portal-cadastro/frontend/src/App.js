@@ -4,6 +4,8 @@ import AdminDashboard from "./pages/AdminDashboard";
 import GerenteDashboard from "./pages/GerenteDashboard";
 import OperadorDashboard from "./pages/OperadorDashboard";
 
+import Cadastro from "./pages/Cadastro";
+
 function App() {
   return (
     <Router>
@@ -13,6 +15,7 @@ function App() {
         <Route path="/gerente/dashboard" element={<GerenteDashboard />} />
         <Route path="/operador/dashboard" element={<OperadorDashboard />} />
         <Route path="*" element={<Login />} /> {/* Rota para casos não encontrados */}
+        <Route path="/cadastro" element={<Cadastro />}/>
       </Routes>
     </Router>
   );
