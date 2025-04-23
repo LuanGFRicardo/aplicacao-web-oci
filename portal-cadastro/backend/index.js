@@ -152,8 +152,10 @@ async function criarUsuariosIniciais() {
 
         const rolesExistentes = result.map(user => user.role);
         
+        const senhaHash = await hashSenhaAdmin();
+
         const usuariosParaCriar = [
-            { nome: "Admin", email: "admin@gmail.com", role: "admin", empresa_id: "11111111-1111-1111-1111-111111111111" }
+            { nome: "Admin", email: "admin@gmail.com", senha: senhaHash, role: "admin", empresa_id: "11111111-1111-1111-1111-111111111111" }
         ];
 
         usuariosParaCriar.forEach(usuario => {
@@ -163,7 +165,7 @@ async function criarUsuariosIniciais() {
                     VALUES (UUID(), ?, ?, ?, ?, ?, 1)
                 `;
 
-                db.query(insertQuery, [usuario.nome, usuario.email, hashSenhaAdmin(), usuario.role, usuario.empresa_id], (err) => {
+                db.query(insertQuery, [usuario.nome, usuario.email, usuario.senha, usuario.role, usuario.empresa_id], (err) => {
                     if (err) {
                         console.error(`Erro ao criar usuário ${usuario.role}:`, err);
                     } else {
